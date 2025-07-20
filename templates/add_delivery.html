@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Add Delivery - TelAztec Order Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Add New Delivery</h1>
+    <p>Enter the details for a new delivery entry</p>
+    
+    <form method="POST">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="customer">Customer *</label>
+                <input type="text" id="customer" name="customer" required 
+                       placeholder="e.g., BARCO, FABRINET, POWERTECH">
+            </div>
+            
+            <div class="form-group">
+                <label for="po_number">PO Number *</label>
+                <input type="text" id="po_number" name="po_number" required 
+                       placeholder="Customer's PO number">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="line_number">Line Number *</label>
+                <input type="text" id="line_number" name="line_number" required 
+                       placeholder="e.g., 1, 2, 3">
+            </div>
+            
+            <div class="form-group">
+                <label for="customer_part_number">Customer Part Number *</label>
+                <input type="text" id="customer_part_number" name="customer_part_number" required 
+                       placeholder="Customer's part number">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="unit_price">Unit Price ($) *</label>
+                <input type="number" id="unit_price" name="unit_price" step="0.01" min="0" required 
+                       placeholder="0.00">
+            </div>
+            
+            <div class="form-group">
+                <label for="delivery_quantity">Delivery Quantity *</label>
+                <input type="number" id="delivery_quantity" name="delivery_quantity" min="1" required 
+                       placeholder="Quantity for this delivery">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="telaztec_part_number">TelAztec Part Number</label>
+                <input type="text" id="telaztec_part_number" name="telaztec_part_number" 
+                       placeholder="Internal part number">
+            </div>
+            
+            <div class="form-group">
+                <label for="rar">RAR</label>
+                <input type="text" id="rar" name="rar" 
+                       placeholder="RAR designation">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="delivery_date">Delivery Date *</label>
+                <input type="date" id="delivery_date" name="delivery_date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="calculated_total">Line Total ($)</label>
+                <input type="text" id="calculated_total" readonly 
+                       placeholder="Will calculate automatically"
+                       style="background-color: #f8f9fa;">
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn btn-success">Save Delivery</button>
+            <a href="{{ url_for('delivery_log') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Auto-calculate line total
+    function calculateTotal() {
+        const unitPrice = parseFloat(document.getElementById('unit_price').value) || 0;
+        const quantity = parseInt(document.getElementById('delivery_quantity').value) || 0;
+        const total = unitPrice * quantity;
+        document.getElementById('calculated_total').value = total.toFixed(2);
+    }
+    
+    document.getElementById('unit_price').addEventListener('input', calculateTotal);
+    document.getElementById('delivery_quantity').addEventListener('input', calculateTotal);
+    
+    // Set default delivery date to today
+    document.getElementById('delivery_date').valueAsDate = new Date();
+</script>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}PO Summary - TelAztec Order Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1>Purchase Order Summary</h1>
+            <p style="color: #666; margin-top: 0.5rem;">
+                <em>Auto-calculated from delivery entries - showing total quantities per PO line item</em>
+            </p>
+        </div>
+        {% if session.role == 'admin' %}
+        <a href="{{ url_for('add_delivery') }}" class="btn btn-success">Add New Delivery</a>
+        {% endif %}
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters">
+        <h3>Filter PO Summary</h3>
+        <form method="GET">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="customer">Customer</label>
+                    <input type="text" id="customer" name="customer" value="{{ customer_filter }}" 
+                           placeholder="Filter by customer name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="part">Part Number</label>
+                    <input type="text" id="part" name="part" value="{{ part_filter }}" 
+                           placeholder="Customer or TelAztec part number">
+                </div>
+                
+                <div class="form-group">
+                    <label for="date_from">Created From</label>
+                    <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="date_to">Created To</label>
+                    <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+                </div>
+            </div>
+            
+            <div style="margin-top: 1rem;">
+                <button type="submit" class="btn">Apply Filters</button>
+                <a href="{{ url_for('po_log') }}" class="btn btn-secondary">Clear Filters</a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Summary Statistics -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ orders|length }}</div>
+            <div class="stat-label">PO Line Items</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ total_quantity }}</div>
+            <div class="stat-label">Total Quantity</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${{ "%.2f"|format(total_revenue) }}</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+    </div>
+    
+    <!-- PO Summary Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>PO Number</th>
+                    <th>Customer Part #</th>
+                    <th>TelAztec Part #</th>
+                    <th>RAR</th>
+                    <th>Unit Price</th>
+                    <th>Total Qty</th>
+                    <th>Total Price</th>
+                    <th>Deliveries</th>
+                    <th>First Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.customer }}</td>
+                    <td>
+                        <a href="{{ url_for('po_details', customer=order.customer, po_number=order.po_number, customer_part_number=order.customer_part_number) }}" 
+                           style="text-decoration: none; color: #3498db;">
+                            {{ order.po_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('po_details', customer=order.customer, po_number=order.po_number, customer_part_number=order.customer_part_number) }}" 
+                           style="text-decoration: none; color: #3498db;">
+                            {{ order.customer_part_number }}
+                        </a>
+                    </td>
+                    <td>{{ order.telaztec_part_number or '' }}</td>
+                    <td>{{ order.rar or '' }}</td>
+                    <td>${{ "%.2f"|format(order.unit_price) }}</td>
+                    <td>{{ order.total_quantity }}</td>
+                    <td>${{ "%.2f"|format(order.total_price) }}</td>
+                    <td>{{ order.delivery_count }}</td>
+                    <td>{{ order.first_created.split(' ')[0] if order.first_created else '' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" style="text-align: center; padding: 2rem;">
+                        No PO items found. 
+                        {% if session.role == 'admin' %}
+                        <a href="{{ url_for('add_delivery') }}">Add your first delivery</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

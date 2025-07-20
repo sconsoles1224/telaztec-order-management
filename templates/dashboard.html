@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TelAztec Order Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Dashboard</h1>
+    <p>Welcome to the TelAztec Order Management System</p>
+</div>
+
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-number">{{ unique_pos }}</div>
+        <div class="stat-label">Unique PO Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_deliveries }}</div>
+        <div class="stat-label">Total Deliveries</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">${{ "%.2f"|format(recent_deliveries|sum(attribute='line_total_price') if recent_deliveries else 0) }}</div>
+        <div class="stat-label">Recent Revenue</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <div class="card">
+        <h2>Recent Deliveries</h2>
+        <div class="recent-list">
+            {% for delivery in recent_deliveries %}
+            <div class="recent-item">
+                <h4><a href="{{ url_for('edit_delivery', delivery_number=delivery.delivery_number) }}">{{ delivery.delivery_number }}</a></h4>
+                <div class="recent-meta">
+                    {{ delivery.customer }} - {{ delivery.customer_part_number }}<br>
+                    Qty: {{ delivery.delivery_quantity }} | ${{ "%.2f"|format(delivery.line_total_price) }}<br>
+                    Due: {{ delivery.delivery_date }}<br>
+                    <small>Created: {{ delivery.created_date }}</small>
+                </div>
+            </div>
+            {% else %}
+            <p>No deliveries yet. <a href="{{ url_for('add_delivery') }}">Add your first delivery</a></p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Upcoming Deliveries</h2>
+        <div class="recent-list">
+            {% for delivery in upcoming_deliveries %}
+            <div class="recent-item">
+                <h4><a href="{{ url_for('edit_delivery', delivery_number=delivery.delivery_number) }}">{{ delivery.delivery_number }}</a></h4>
+                <div class="recent-meta">
+                    {{ delivery.customer }} - {{ delivery.customer_part_number }}<br>
+                    Qty: {{ delivery.delivery_quantity }} | ${{ "%.2f"|format(delivery.line_total_price) }}<br>
+                    <strong>Due: {{ delivery.delivery_date }}</strong><br>
+                    <small>{{ delivery.po_number }}</small>
+                </div>
+            </div>
+            {% else %}
+            <p>No upcoming deliveries in next 7 days.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% if session.role == 'admin' %}
+<div class="card">
+    <h2>Quick Actions</h2>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ url_for('add_delivery') }}" class="btn btn-success">Add New Delivery</a>
+        <a href="{{ url_for('po_log') }}" class="btn">View PO Summary</a>
+        <a href="{{ url_for('delivery_log') }}" class="btn">View All Deliveries</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

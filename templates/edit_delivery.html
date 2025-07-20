@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Delivery {{ delivery.delivery_number }} - TelAztec Order Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Edit Delivery {{ delivery.delivery_number }}</h1>
+    <p>Modify the details for this delivery entry</p>
+    
+    <form method="POST">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="customer">Customer *</label>
+                <input type="text" id="customer" name="customer" value="{{ delivery.customer }}" required 
+                       placeholder="e.g., BARCO, FABRINET, POWERTECH">
+            </div>
+            
+            <div class="form-group">
+                <label for="po_number">PO Number *</label>
+                <input type="text" id="po_number" name="po_number" value="{{ delivery.po_number }}" required 
+                       placeholder="Customer's PO number">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="line_number">Line Number *</label>
+                <input type="text" id="line_number" name="line_number" value="{{ delivery.line_number }}" required 
+                       placeholder="e.g., 1, 2, 3">
+            </div>
+            
+            <div class="form-group">
+                <label for="customer_part_number">Customer Part Number *</label>
+                <input type="text" id="customer_part_number" name="customer_part_number" 
+                       value="{{ delivery.customer_part_number }}" required 
+                       placeholder="Customer's part number">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="unit_price">Unit Price ($) *</label>
+                <input type="number" id="unit_price" name="unit_price" step="0.01" min="0" 
+                       value="{{ delivery.unit_price }}" required placeholder="0.00">
+            </div>
+            
+            <div class="form-group">
+                <label for="delivery_quantity">Delivery Quantity *</label>
+                <input type="number" id="delivery_quantity" name="delivery_quantity" min="1" 
+                       value="{{ delivery.delivery_quantity }}" required 
+                       placeholder="Quantity for this delivery">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="telaztec_part_number">TelAztec Part Number</label>
+                <input type="text" id="telaztec_part_number" name="telaztec_part_number" 
+                       value="{{ delivery.telaztec_part_number or '' }}" 
+                       placeholder="Internal part number">
+            </div>
+            
+            <div class="form-group">
+                <label for="rar">RAR</label>
+                <input type="text" id="rar" name="rar" value="{{ delivery.rar or '' }}" 
+                       placeholder="RAR designation">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="delivery_date">Delivery Date *</label>
+                <input type="date" id="delivery_date" name="delivery_date" 
+                       value="{{ delivery.delivery_date }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="calculated_total">Line Total ($)</label>
+                <input type="text" id="calculated_total" readonly 
+                       value="{{ delivery.line_total_price }}"
+                       style="background-color: #f8f9fa;">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Delivery Information</label>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; color: #666;">
+                <strong>Delivery Number:</strong> {{ delivery.delivery_number }}<br>
+                <strong>Created:</strong> {{ delivery.created_date }}<br>
+                <strong>Last Modified:</strong> {{ delivery.last_modified }}
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn btn-success">Update Delivery</button>
+            <a href="{{ url_for('delivery_log') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Auto-calculate line total
+    function calculateTotal() {
+        const unitPrice = parseFloat(document.getElementById('unit_price').value) || 0;
+        const quantity = parseInt(document.getElementById('delivery_quantity').value) || 0;
+        const total = unitPrice * quantity;
+        document.getElementById('calculated_total').value = total.toFixed(2);
+    }
+    
+    document.getElementById('unit_price').addEventListener('input', calculateTotal);
+    document.getElementById('delivery_quantity').addEventListener('input', calculateTotal);
+</script>
+{% endblock %}
