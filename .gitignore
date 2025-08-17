@@ -1,0 +1,6 @@
+# V2 specific ignores
+telaztec-v2/uploads/*
+!telaztec-v2/uploads/.gitkeep
+telaztec-v2/*.db
+telaztec-v2/__pycache__/
+.DS_Store

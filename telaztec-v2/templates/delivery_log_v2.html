@@ -1,0 +1,127 @@
+{% extends "base_v2.html" %}
+
+{% block title %}Delivery Schedule - TelAztec Order Management V2{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1>Production / Delivery Schedule</h1>
+        {% if session.role == 'admin' %}
+        <a href="{{ url_for('add_delivery') }}" class="btn btn-success">Add New Delivery</a>
+        {% endif %}
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters">
+        <h3>Filter Deliveries</h3>
+        <form method="GET">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="customer">Customer</label>
+                    <input type="text" id="customer" name="customer" value="{{ customer_filter }}" 
+                           placeholder="Filter by customer name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="part">Part Number</label>
+                    <input type="text" id="part" name="part" value="{{ part_filter }}" 
+                           placeholder="Customer or TelAztec part number">
+                </div>
+                
+                <div class="form-group">
+                    <label for="date_from">Delivery Date From</label>
+                    <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="date_to">Delivery Date To</label>
+                    <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+                </div>
+            </div>
+            
+            <div style="margin-top: 1rem;">
+                <button type="submit" class="btn">Apply Filters</button>
+                <a href="{{ url_for('delivery_log') }}" class="btn btn-secondary">Clear Filters</a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Summary Statistics -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ deliveries|length }}</div>
+            <div class="stat-label">Deliveries Found</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ total_quantity }}</div>
+            <div class="stat-label">Total Quantity</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${{ "%.2f"|format(total_revenue) }}</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+    </div>
+    
+    <!-- Deliveries Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Delivery #</th>
+                    <th>Delivery Date</th>
+                    <th>Customer</th>
+                    <th>PO Number</th>
+                    <th>Line #</th>
+                    <th>Customer Part #</th>
+                    <th>TelAztec Part #</th>
+                    <th>RAR</th>
+                    <th>Unit Price</th>
+                    <th>Del Qty</th>
+                    <th>Line Total</th>
+                    {% if session.role == 'admin' %}
+                    <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for delivery in deliveries %}
+                <tr>
+                    <td>
+                        {% if session.role == 'admin' %}
+                        <a href="{{ url_for('edit_delivery', delivery_number=delivery.delivery_number) }}">{{ delivery.delivery_number }}</a>
+                        {% else %}
+                        {{ delivery.delivery_number }}
+                        {% endif %}
+                    </td>
+                    <td>{{ delivery.delivery_date }}</td>
+                    <td>{{ delivery.customer }}</td>
+                    <td>{{ delivery.po_number }}</td>
+                    <td>{{ delivery.line_number }}</td>
+                    <td>{{ delivery.customer_part_number }}</td>
+                    <td>{{ delivery.telaztec_part_number or '' }}</td>
+                    <td>{{ delivery.rar or '' }}</td>
+                    <td>${{ "%.2f"|format(delivery.unit_price) }}</td>
+                    <td>{{ delivery.delivery_quantity }}</td>
+                    <td>${{ "%.2f"|format(delivery.line_total_price) }}</td>
+                    {% if session.role == 'admin' %}
+                    <td>
+                        <a href="{{ url_for('edit_delivery', delivery_number=delivery.delivery_number) }}" 
+                           class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Edit</a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="{% if session.role == 'admin' %}12{% else %}11{% endif %}" style="text-align: center; padding: 2rem;">
+                        No deliveries found. 
+                        {% if session.role == 'admin' %}
+                        <a href="{{ url_for('add_delivery') }}">Add your first delivery</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

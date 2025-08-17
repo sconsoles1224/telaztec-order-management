@@ -1,0 +1,123 @@
+{% extends "base_v2.html" %}
+
+{% block title %}Upload Data - TelAztec Order Management V2{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>📊 Data Upload & Management</h1>
+    <p>Upload Excel files, process PDF documents, and manage your delivery data</p>
+</div>
+
+<!-- Upload Requirements -->
+<div class="card" style="background: #e3f2fd; border-left: 4px solid #2196f3;">
+    <h3>📋 Excel Upload Requirements</h3>
+    <ul style="margin-left: 20px; color: #424242;">
+        <li>File must be in .xlsx or .xls format</li>
+        <li><strong>Required columns (exact names):</strong> Customer, PO Number, Line Number, Customer Part Number, Unit Price, TelAztec Part Number, RAR, Delivery Quantity, Delivery Date</li>
+        <li>Column headers must match exactly (case-sensitive)</li>
+        <li>Maximum file size: 16MB</li>
+    </ul>
+</div>
+
+<!-- Excel Upload Section -->
+<div class="card" style="border: 2px dashed #bdc3c7; background: #f8f9fa;">
+    <h2>📊 Excel Bulk Import</h2>
+    <p>Upload an Excel file containing delivery data. The system will automatically generate delivery numbers for each row.</p>
+    
+    <form id="excelForm" action="{{ url_for('upload_excel') }}" method="post" enctype="multipart/form-data">
+        <div style="margin-bottom: 1rem;">
+            <input type="file" id="excelFile" name="file" accept=".xlsx,.xls" onchange="updateFileName('excel')" style="margin-bottom: 10px;">
+        </div>
+        <button type="submit" class="btn btn-success" id="excelUpload" disabled>Upload Excel File</button>
+        <div id="excelFileName" style="margin-top: 10px; color: #27ae60; font-weight: 500;"></div>
+    </form>
+</div>
+
+<!-- PDF Upload Section -->
+{% if pdf_support %}
+<div class="card" style="border: 2px dashed #f39c12; background: #fef9e7;">
+    <h2>📄 PDF Purchase Order Processing</h2>
+    <p>Upload a PDF purchase order document. The system will attempt to extract delivery information using OCR technology.</p>
+    
+    <form id="pdfForm" action="{{ url_for('upload_pdf') }}" method="post" enctype="multipart/form-data">
+        <div style="margin-bottom: 1rem;">
+            <input type="file" id="pdfFile" name="file" accept=".pdf" onchange="updateFileName('pdf')" style="margin-bottom: 10px;">
+        </div>
+        <button type="submit" class="btn" id="pdfUpload" disabled style="background: #f39c12;">Process PDF</button>
+        <div id="pdfFileName" style="margin-top: 10px; color: #f39c12; font-weight: 500;"></div>
+    </form>
+</div>
+{% else %}
+<div class="card" style="border: 2px dashed #95a5a6; background: #ecf0f1;">
+    <h2>📄 PDF Processing (Unavailable)</h2>
+    <p style="color: #7f8c8d;">PDF processing is currently unavailable. The PyMuPDF library needs to be installed to enable this feature.</p>
+</div>
+{% endif %}
+
+<!-- Export Section -->
+<div class="card" style="background: #e8f5e8; border-left: 4px solid #27ae60;">
+    <h2>📤 Export Data</h2>
+    <p>Download current delivery data as an Excel file for backup or external processing.</p>
+    <a href="{{ url_for('export_excel') }}" class="btn btn-success" style="text-decoration: none;">Export to Excel</a>
+</div>
+
+<!-- Danger Zone -->
+<div class="card" style="background: #ffebee; border: 2px solid #f44336;">
+    <h2>⚠️ Danger Zone</h2>
+    <p style="color: #c62828; margin-bottom: 20px;"><strong>Warning:</strong> This action will permanently delete ALL delivery data from the V2 system. This cannot be undone!</p>
+    
+    <form action="{{ url_for('reset_database') }}" method="post" onsubmit="return confirmReset()">
+        <button type="submit" class="btn btn-danger">Reset V2 Database</button>
+    </form>
+</div>
+
+<script>
+    function updateFileName(type) {
+        const fileInput = document.getElementById(type + 'File');
+        const uploadBtn = document.getElementById(type + 'Upload');
+        const fileNameDiv = document.getElementById(type + 'FileName');
+        
+        if (fileInput.files.length > 0) {
+            const fileName = fileInput.files[0].name;
+            fileNameDiv.textContent = `Selected: ${fileName}`;
+            uploadBtn.disabled = false;
+        } else {
+            fileNameDiv.textContent = '';
+            uploadBtn.disabled = true;
+        }
+    }
+
+    function confirmReset() {
+        return confirm('Are you sure you want to delete ALL V2 delivery data? This action cannot be undone!\n\nThis will only affect the V2 database, your V1 data will remain intact.');
+    }
+
+    // Form submission handlers
+    document.getElementById('excelForm').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('excelFile');
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('Please select an Excel file first.');
+            return false;
+        }
+        
+        const uploadBtn = document.getElementById('excelUpload');
+        uploadBtn.textContent = 'Uploading...';
+        uploadBtn.disabled = true;
+    });
+
+    {% if pdf_support %}
+    document.getElementById('pdfForm').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('pdfFile');
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('Please select a PDF file first.');
+            return false;
+        }
+        
+        const uploadBtn = document.getElementById('pdfUpload');
+        uploadBtn.textContent = 'Processing...';
+        uploadBtn.disabled = true;
+    });
+    {% endif %}
+</script>
+{% endblock %}
