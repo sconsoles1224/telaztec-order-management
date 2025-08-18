@@ -777,3 +777,23 @@ def export_excel():
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, sheet_name='Deliveries', index=False)
+        
+        output.seek(0)
+        
+        # Generate filename with current date
+        filename = f'telaztec_deliveries_v2_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        flash(f'Error exporting data: {str(e)}', 'error')
+        return redirect(url_for('dashboard'))
+
+if __name__ == '__main__':
+    init_database()
+    app.run(debug=True, host='0.0.0.0', port=8081)
